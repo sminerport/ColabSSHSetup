@@ -59,5 +59,13 @@ def setup_ssh():
     else:
         print("SSH key not found. Please ensure the key is present in the specified location.")
 
+    # Configure Git user email and name
+    try:
+        subprocess.run(['git', 'config', '--global', 'user.email', 'scottminer1205@gmail.com'], check=True)
+        subprocess.run(['git', 'config', '--global', 'user.name', 'Scott Miner'], check=True)
+        print("Git user identity has been set successfully.")
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to set Git user identity: {e}")
+
 if __name__ == "__main__":
     setup_ssh()
