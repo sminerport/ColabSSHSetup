@@ -3,14 +3,17 @@ import re
 import subprocess
 from dotenv import load_dotenv
 
-def setup_ssh():
-    # Load environment variables from .env file
-    dotenv_path = '/content/drive/MyDrive/colab_ssh/.env'
-    if os.path.exists(dotenv_path):
-        load_dotenv(dotenv_path)
-    else:
-        print("No .env file found, proceeding without predefined SSH path.")
+def find_env_file():
+    """Attempt to locate the .env file within Google Drive."""
+    drive_path = '/content/drive/MyDrive'
+    env_filename = ".env"
+    
+    for root, dirs, files in os.walk(drive_path):
+        if env_filename in files:
+            return os.path.join(root, env_filename)
+    return None
 
+def setup_ssh():
     # Check if running in Google Colab
     in_colab = 'COLAB_GPU' in os.environ or 'COLAB_TPU_ADDR' in os.environ
 
@@ -29,6 +32,14 @@ def setup_ssh():
             print("Google Colab environment not detected properly. Unable to mount Google Drive.")
     else:
         print("Not running in an interactive Google Colab session. Skipping Google Drive mount.")
+
+    # Locate the .env file automatically
+    dotenv_path = find_env_file()
+    if dotenv_path:
+        load_dotenv(dotenv_path)
+        print(f"Loaded .env file from {dotenv_path}")
+    else:
+        print("No .env file found, proceeding without predefined SSH path.")
 
     # Attempt to load SSH key path from environment, prompt if not set
     key_path = os.getenv("SSH_KEY_PATH")
