@@ -4,7 +4,6 @@ import subprocess
 from dotenv import load_dotenv
 
 def setup_ssh():
-
     # Load environment variables from .env file
     dotenv_path = '/content/drive/MyDrive/colab_ssh/.env'
     if os.path.exists(dotenv_path):
@@ -31,22 +30,23 @@ def setup_ssh():
     else:
         print("Not running in an interactive Google Colab session. Skipping Google Drive mount.")
 
-    # Prompt user for SSH key path, with a default
-    while True:
-        key_path = input("Enter the path to your SSH key (default: /content/drive/MyDrive/colab_ssh/id_rsa): ") or (
-            '/content/drive/MyDrive/colab_ssh/id_rsa' if in_colab else os.path.expanduser('~/colab_ssh/id_rsa')
-        )
-
+    # Attempt to load SSH key path from environment, prompt if not set
+    key_path = os.getenv("SSH_KEY_PATH")
+    while not key_path or not os.path.exists(key_path):
+        key_path = input("Enter the path to your SSH key: ")
         if os.path.exists(key_path):
-            print("SSH key found. Copying key to ~/.ssh directory...")
-            ssh_dir = os.path.expanduser('~/.ssh')
-            os.makedirs(ssh_dir, exist_ok=True)
-            subprocess.run(['cp', key_path, f'{ssh_dir}/id_rsa'], check=True)
-            subprocess.run(['cp', f'{key_path}.pub', f'{ssh_dir}/id_rsa.pub'], check=True)
-            os.chmod(f'{ssh_dir}/id_rsa', 0o600)
+            print("SSH key found.")
             break
         else:
             print("SSH key not found at the specified path. Please try again or press Ctrl+C to exit.")
+
+    # Set up SSH directory
+    print("Copying SSH key to ~/.ssh directory...")
+    ssh_dir = os.path.expanduser('~/.ssh')
+    os.makedirs(ssh_dir, exist_ok=True)
+    subprocess.run(['cp', key_path, f'{ssh_dir}/id_rsa'], check=True)
+    subprocess.run(['cp', f'{key_path}.pub', f'{ssh_dir}/id_rsa.pub'], check=True)
+    os.chmod(f'{ssh_dir}/id_rsa', 0o600)
 
     # Add SSH key to ssh-agent
     try:
