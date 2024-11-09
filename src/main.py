@@ -1,8 +1,17 @@
 import os
 import re
 import subprocess
+from dotenv import load_dotenv
 
 def setup_ssh():
+
+    # Load environment variables from .env file
+    dotenv_path = '/content/drive/MyDrive/colab_ssh/.env'
+    if os.path.exists(dotenv_path):
+        load_dotenv(dotenv_path)
+    else:
+        print("No .env file found, proceeding without predefined SSH path.")
+
     # Check if running in Google Colab
     in_colab = 'COLAB_GPU' in os.environ or 'COLAB_TPU_ADDR' in os.environ
 
